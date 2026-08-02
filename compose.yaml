@@ -1,0 +1,19 @@
+services:
+  codex-workstation:
+    build:
+      context: .
+    image: codex-workstation:local
+    container_name: codex-workstation
+    init: true
+    restart: unless-stopped
+    volumes:
+      - workspace:/workspace
+      - codex-state:/home/codex/.codex
+      - gh-state:/home/codex/.config/gh
+      - ${HOME}/.codex:/host-config/codex:ro
+      - ${HOME}/.config/gh:/host-config/gh:ro
+
+volumes:
+  workspace:
+  codex-state:
+  gh-state:
