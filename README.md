@@ -10,6 +10,9 @@ away from the Mac.
 - Standalone Codex CLI and its managed remote-control app server
 - GitHub CLI (`gh`), Git, SSH client, `zsh`, and `tmux`
 - Docker-managed persistent volumes for repositories, Codex, and GitHub state
+- The local `~/.codex/skills` collection embedded into the image at build time
+
+The skills source defaults to `~/.codex/skills`; override it with `CODEX_SKILLS_PATH` when building.
 
 Ghostty is intentionally **not** in the Linux image. Docker Desktop containers
 cannot run the native macOS application; use Ghostty on the host to enter the

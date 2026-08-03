@@ -2,6 +2,8 @@ services:
   codex-workstation:
     build:
       context: .
+      additional_contexts:
+        codex-skills: ${CODEX_SKILLS_PATH:-${HOME}/.codex/skills}
     image: codex-workstation:local
     container_name: codex-workstation
     init: true

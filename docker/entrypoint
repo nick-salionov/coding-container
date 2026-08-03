@@ -4,6 +4,10 @@ set -euo pipefail
 export HOME=/home/codex
 export CODEX_HOME="$HOME/.codex"
 
+rm -rf "$CODEX_HOME/skills"
+mkdir -p "$CODEX_HOME/skills"
+cp -a /opt/codex-skills/. "$CODEX_HOME/skills/"
+
 mkdir -p "$CODEX_HOME" "$HOME/.config/gh" /workspace
 /usr/local/bin/seed-host-config
 
