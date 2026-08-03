@@ -7,6 +7,7 @@ services:
     image: codex-workstation:local
     container_name: codex-workstation
     init: true
+    working_dir: /workspace
     restart: unless-stopped
     volumes:
       - workspace:/workspace

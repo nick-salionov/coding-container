@@ -16,6 +16,7 @@ RUN apt-get update \
         git \
         gh \
         gosu \
+        micro \
         openssh-client \
         procps \
         tmux \

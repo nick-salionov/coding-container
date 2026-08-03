@@ -10,7 +10,7 @@ down:
 	docker compose down
 
 shell:
-	docker compose exec --user codex codex-workstation zsh
+	docker compose exec --user codex --workdir /workspace codex-workstation zsh
 
 logs:
 	docker compose logs --follow codex-workstation

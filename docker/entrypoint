@@ -9,6 +9,7 @@ mkdir -p "$CODEX_HOME/skills"
 cp -a /opt/codex-skills/. "$CODEX_HOME/skills/"
 
 mkdir -p "$CODEX_HOME" "$HOME/.config/gh" /workspace
+chown codex:codex /workspace
 /usr/local/bin/seed-host-config
 
 settings_file="$CODEX_HOME/app-server-daemon/settings.json"
