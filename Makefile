@@ -1,7 +1,7 @@
 .PHONY: build up down shell logs doctor sync-auth
 
 build:
-	docker compose build
+	docker compose build --pull --build-arg CODEX_INSTALL_CACHE_BUST=$$(date +%s)
 
 up:
 	docker compose up -d
