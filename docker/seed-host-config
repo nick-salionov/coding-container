@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+copy_file() {
+    local source=$1
+    local destination=$2
+
+    if [[ -f "$source" && ( "${REPLACE_HOST_CONFIG:-0}" == 1 || ! -e "$destination" ) ]]; then
+        install -D -m 0600 "$source" "$destination"
+    fi
+}
+
+copy_file /host-config/codex/auth.json "$CODEX_HOME/auth.json"
+copy_file /host-config/codex/config.toml "$CODEX_HOME/config.toml"
+copy_file /host-config/gh/hosts.yml "$HOME/.config/gh/hosts.yml"
+copy_file /host-config/gh/config.yml "$HOME/.config/gh/config.yml"
+
+chown -R codex:codex "$CODEX_HOME" "$HOME/.config"

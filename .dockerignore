@@ -1,4 +1,4 @@
 *
-!Containerfile
-!container/
-!container/**
+!.dockerignore
+!docker/
+!docker/**

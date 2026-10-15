@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export HOME=/home/codex
+export CODEX_HOME="$HOME/.codex"
+
+rm -rf "$CODEX_HOME/skills"
+mkdir -p "$CODEX_HOME/skills"
+cp -a /opt/codex-skills/. "$CODEX_HOME/skills/"
+
+mkdir -p "$CODEX_HOME" "$HOME/.config/gh" /workspace
+chown codex:codex /workspace
+/usr/local/bin/seed-host-config
+
+settings_file="$CODEX_HOME/app-server-daemon/settings.json"
+if [[ ! -f "$settings_file" ]]; then
+    gosu codex codex app-server daemon bootstrap --remote-control
+else
+    gosu codex codex app-server daemon enable-remote-control
+    gosu codex codex app-server daemon start
+fi
+
+exec gosu codex "$@"
