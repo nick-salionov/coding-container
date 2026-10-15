@@ -1,4 +1,4 @@
 *
-!Dockerfile
-!docker/
-!docker/**
+!Containerfile
+!container/
+!container/**

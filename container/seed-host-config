@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+copy_file() {
+    local source=$1
+    local destination=$2
+
+    if [[ -f "$source" && ( "${REPLACE_HOST_CONFIG:-0}" == 1 || ! -e "$destination" ) ]]; then
+        install -D -m 0600 "$source" "$destination"
+    fi
+}
+
+copy_codex_config() {
+    local source=$1
+    local destination=$2
+    local temporary_file
+
+    if [[ ! -f "$source" || ( "${REPLACE_HOST_CONFIG:-0}" != 1 && -e "$destination" ) ]]; then
+        return
+    fi
+
+    temporary_file=$(mktemp)
+    # node_repl is supplied by the macOS ChatGPT app and references executables
+    # under /Applications. It cannot run in this Linux container. Skip its main
+    # TOML table and nested tables while retaining every other host setting.
+    awk '
+        /^\[mcp_servers\.node_repl([.]|\]|$)/ { skip_node_repl = 1; next }
+        skip_node_repl && /^\[/ { skip_node_repl = 0 }
+        !skip_node_repl { print }
+    ' "$source" > "$temporary_file"
+    install -D -m 0600 "$temporary_file" "$destination"
+    rm -f "$temporary_file"
+}
+
+copy_file /host-config/codex/auth.json "$CODEX_HOME/auth.json"
+copy_codex_config /host-config/codex/config.toml "$CODEX_HOME/config.toml"
+copy_file /host-config/gh/hosts.yml "$HOME/.config/gh/hosts.yml"
+copy_file /host-config/gh/config.yml "$HOME/.config/gh/config.yml"
+
+chown -R codex:codex "$CODEX_HOME" "$HOME/.config"

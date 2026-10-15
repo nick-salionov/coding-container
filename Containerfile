@@ -84,8 +84,8 @@ USER root
 COPY --from=codex-skills . /opt/codex-skills/
 RUN find /opt/codex-skills -type f -name .DS_Store -exec rm -f {} + && find /opt/codex-skills -type d -name __pycache__ -prune -exec rm -rf {} +
 RUN chown -R codex:codex /opt/codex-skills
-COPY docker/seed-host-config /usr/local/bin/seed-host-config
-COPY docker/entrypoint /usr/local/bin/entrypoint
+COPY container/seed-host-config /usr/local/bin/seed-host-config
+COPY container/entrypoint /usr/local/bin/entrypoint
 RUN chmod 0755 /usr/local/bin/seed-host-config /usr/local/bin/entrypoint
 
 WORKDIR /workspace
