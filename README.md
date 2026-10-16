@@ -37,8 +37,8 @@ CONTAINER_ENGINE=podman make shell
 
 - Debian 13.6 slim, for Apple Silicon and Intel Macs
 - Standalone Codex CLI and its managed remote-control app server
-- GitHub CLI (`gh`), Git, SSH client, `zsh`, and `tmux`
-- Terraform, Python 3.14, Checkov, and Actionlint
+- AWS CLI, GitHub CLI (`gh`), Git, SSH client, `zsh`, and `tmux`
+- Terraform, Python 3.13.16, Checkov, and Actionlint
 - Persistent volumes for repositories, Codex, and GitHub state
 - The local `~/.codex/skills` collection embedded into the image at build time
 

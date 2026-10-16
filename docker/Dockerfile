@@ -11,8 +11,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PATH=/home/codex/.local/bin:${PATH}
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates bubblewrap curl git gh gpg gosu micro openssh-client procps tmux zsh \
+    && apt-get install -y --no-install-recommends awscli ca-certificates bubblewrap curl git gh gpg gosu micro openssh-client procps tmux zsh \
     && rm -rf /var/lib/apt/lists/* \
+    && aws --version \
     && groupadd --gid 1000 codex \
     && useradd --uid 1000 --gid codex --create-home --shell /usr/bin/zsh codex
 
@@ -42,9 +43,9 @@ RUN curl --fail --silent --show-error --location https://astral.sh/uv/install.sh
     && sh /tmp/uv-install.sh --no-modify-path \
     && rm /tmp/uv-install.sh \
     && uv --version \
-    && uv python install 3.14 \
-    && uv tool install --python 3.14 checkov \
-    && python3.14 --version \
+    && uv python install 3.13.16 \
+    && uv tool install --python 3.13.16 checkov \
+    && python3.13 --version \
     && checkov --version
 
 ARG CODEX_INSTALL_CACHE_BUST=0

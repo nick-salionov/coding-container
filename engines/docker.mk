@@ -10,7 +10,12 @@ down:
 	docker compose -f docker/compose.yaml down
 
 shell:
-	docker compose -f docker/compose.yaml exec --user codex --workdir /workspace codex-workstation zsh
+	@restore_ghostty_colors() { \
+		printf '\033]111\033\\'; \
+	}; \
+	printf '\033]11;#081a33\033\\'; \
+	trap restore_ghostty_colors 0; \
+	docker compose -f docker/compose.yaml exec --env COLORTERM=truecolor --user codex --workdir /workspace codex-workstation zsh
 
 logs:
 	docker compose -f docker/compose.yaml logs --follow codex-workstation
