@@ -41,3 +41,4 @@ doctor:
 
 sync-auth:
 	podman exec --user root --env REPLACE_HOST_CONFIG=1 $(CONTAINER) /usr/local/bin/seed-host-config
+	podman exec --user codex $(CONTAINER) codex app-server daemon restart

@@ -25,3 +25,4 @@ doctor:
 
 sync-auth:
 	docker compose -f docker/compose.yaml exec --user root -e REPLACE_HOST_CONFIG=1 codex-workstation /usr/local/bin/seed-host-config
+	docker compose -f docker/compose.yaml exec --user codex codex-workstation codex app-server daemon restart

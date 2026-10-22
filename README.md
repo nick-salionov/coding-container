@@ -95,5 +95,21 @@ The host's `~/.codex` and `~/.config/gh` are mounted read-only at
 named volumes. The container never writes to the host credential mounts.
 
 When host credentials change, run `make sync-auth` while the container is up.
-It refreshes only the copied credential/config files; the rest of the live
-Codex and GitHub state is preserved.
+It refreshes only the copied credential/config files, then restarts the managed
+Codex app-server so it reloads the new authentication state. Remote Control
+clients reconnect briefly; the rest of the live Codex and GitHub state is
+preserved.
+
+If Codex presents the sign-in screen after credentials were synced, run:
+
+```sh
+make up
+make sync-auth
+make doctor
+make shell
+```
+
+`make shell` expects the container to be running. `make sync-auth` now restarts
+the managed app-server because `codex login status` only confirms the copied
+credential cache, while an already-running app-server may still have the
+previous authentication state in memory.
