@@ -1,5 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
+
+# Root commands must not resolve executables from user-writable directories.
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 copy_file() {
     local source=$1

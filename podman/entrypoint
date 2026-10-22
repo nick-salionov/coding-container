@@ -1,5 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
+
+# Root commands must not resolve executables from user-writable directories.
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+user_path="/home/codex/.local/bin:$PATH"
 
 export HOME=/home/codex
 export CODEX_HOME="$HOME/.codex"
@@ -14,10 +18,10 @@ chown codex:codex /workspace
 
 settings_file="$CODEX_HOME/app-server-daemon/settings.json"
 if [[ ! -f "$settings_file" ]]; then
-    gosu codex codex app-server daemon bootstrap --remote-control
+    gosu codex /usr/bin/env PATH="$user_path" codex app-server daemon bootstrap --remote-control
 else
-    gosu codex codex app-server daemon enable-remote-control
-    gosu codex codex app-server daemon start
+    gosu codex /usr/bin/env PATH="$user_path" codex app-server daemon enable-remote-control
+    gosu codex /usr/bin/env PATH="$user_path" codex app-server daemon start
 fi
 
-exec gosu codex "$@"
+exec gosu codex /usr/bin/env PATH="$user_path" "$@"
