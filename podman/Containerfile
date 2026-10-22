@@ -2,6 +2,7 @@ FROM debian:13.6-slim
 
 ARG CODEX_INSTALL_URL=https://chatgpt.com/codex/install.sh
 ARG ACTIONLINT_VERSION=1.7.12
+ARG AWS_CLI_VERSION=2.37.12
 ARG TARGETARCH
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -11,11 +12,23 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PATH=/home/codex/.local/bin:${PATH}
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends awscli ca-certificates bubblewrap curl git gh gpg gosu micro openssh-client procps tmux zsh \
+    && apt-get install -y --no-install-recommends ca-certificates bubblewrap curl git gh gpg gosu groff less micro openssh-client procps tmux unzip zsh \
     && rm -rf /var/lib/apt/lists/* \
-    && aws --version \
     && groupadd --gid 1000 codex \
     && useradd --uid 1000 --gid codex --create-home --shell /usr/bin/zsh codex
+
+RUN case "$TARGETARCH" in \
+        amd64) awscli_arch=x86_64; awscli_sha256=e6d3c672fb36ed4b12c354c39a993eee2b34da1437cafb10bac4480840cfa83f ;; \
+        arm64) awscli_arch=aarch64; awscli_sha256=829c76096e05f743267d75098bc7cc7cfae799fc7e568554ebaa6d78e6aba753 ;; \
+        *) echo "Unsupported AWS CLI architecture: $TARGETARCH" >&2; exit 1 ;; \
+    esac \
+    && curl --fail --silent --show-error --location "https://awscli.amazonaws.com/awscli-exe-linux-${awscli_arch}-${AWS_CLI_VERSION}.zip" -o /tmp/awscliv2.zip \
+    && echo "${awscli_sha256}  /tmp/awscliv2.zip" | sha256sum --check --status - \
+    && unzip -q /tmp/awscliv2.zip -d /tmp \
+    && /tmp/aws/install --install-dir /usr/local/aws-cli --bin-dir /usr/local/bin \
+    && rm -rf /tmp/aws /tmp/awscliv2.zip \
+    && aws --version \
+    && test "$(aws --version | cut -d ' ' -f 1)" = "aws-cli/${AWS_CLI_VERSION}"
 
 RUN case "$TARGETARCH" in \
         amd64) actionlint_arch=amd64; actionlint_sha256=8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8 ;; \
@@ -39,6 +52,8 @@ RUN curl --fail --silent --show-error --location https://apt.releases.hashicorp.
 
 USER codex
 WORKDIR /home/codex
+RUN aws configure set region eu-west-1
+
 RUN curl --fail --silent --show-error --location https://astral.sh/uv/install.sh -o /tmp/uv-install.sh \
     && sh /tmp/uv-install.sh --no-modify-path \
     && rm /tmp/uv-install.sh \

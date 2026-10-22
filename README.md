@@ -37,10 +37,13 @@ CONTAINER_ENGINE=podman make shell
 
 - Debian 13.6 slim, for Apple Silicon and Intel Macs
 - Standalone Codex CLI and its managed remote-control app server
-- AWS CLI, GitHub CLI (`gh`), Git, SSH client, `zsh`, and `tmux`
+- AWS CLI 2.37.12, GitHub CLI (`gh`), Git, SSH client, `zsh`, and `tmux`
 - Terraform, Python 3.13.16, Checkov, and Actionlint
 - Persistent volumes for repositories, Codex, and GitHub state
 - The local `~/.codex/skills` collection embedded into the image at build time
+
+The AWS CLI default profile uses region `eu-west-1`. Override it inside the
+container with `aws configure set region YOUR_REGION`.
 
 The skills source defaults to `~/.codex/skills`; override it with
 `CODEX_SKILLS_PATH` when building.
