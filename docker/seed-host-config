@@ -13,7 +13,10 @@ copy_file() {
     fi
 }
 
-copy_file /host-config/codex/auth.json "$CODEX_HOME/auth.json"
+# Seed once: replacing this file can discard tokens refreshed by the container.
+if [[ ! -e "$CODEX_HOME/auth.json" ]]; then
+    copy_file /host-config/codex/auth.json "$CODEX_HOME/auth.json"
+fi
 copy_file /host-config/codex/config.toml "$CODEX_HOME/config.toml"
 copy_file /host-config/gh/hosts.yml "$HOME/.config/gh/hosts.yml"
 copy_file /host-config/gh/config.yml "$HOME/.config/gh/config.yml"

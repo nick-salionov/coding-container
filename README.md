@@ -19,6 +19,7 @@ repository. Afterwards both engines use the same commands:
 ```sh
 make build
 make up
+make login
 make shell
 make logs
 make doctor
@@ -53,7 +54,7 @@ native macOS application; use Ghostty on the host to enter the container.
 
 ## Start
 
-1. Install and authenticate Codex on the Mac. If GitHub CLI has already been
+1. Install Codex on the Mac. If GitHub CLI has already been
    authenticated, its configuration is imported too; otherwise, authenticate it
    inside the workstation when needed.
 2. Configure, build, and start the workstation:
@@ -64,13 +65,23 @@ native macOS application; use Ghostty on the host to enter the container.
    make up
    ```
 
-3. Open it from Ghostty:
+3. Create an independent container login using the Mac's normal browser flow:
+
+   ```sh
+   make login
+   ```
+
+   This works for headless containers even when your organization disables
+   device-code authentication. Run it on the computer with your browser and
+   access to the configured Docker or Podman connection.
+
+4. Open it from Ghostty:
 
    ```sh
    make shell
    ```
 
-4. Clone and work on repositories under `/workspace`.
+5. Clone and work on repositories under `/workspace`.
 
    ```sh
    cd /workspace
@@ -79,7 +90,7 @@ native macOS application; use Ghostty on the host to enter the container.
    codex
    ```
 
-5. Verify the managed Codex app-server:
+6. Verify the managed Codex app-server:
 
    ```sh
    make doctor
@@ -93,26 +104,31 @@ inbound ports.
 ## Credential handling
 
 The host's `~/.codex` and `~/.config/gh` are mounted read-only at
-`/host-config`. On first startup, the entrypoint copies Codex's `auth.json` and
+`/host-config`. On first startup, the entrypoint copies Codex's `auth.json` (if available) and
 `config.toml`, plus GitHub CLI's `hosts.yml` and `config.yml`, into writable
 named volumes. The container never writes to the host credential mounts.
 
-When host credentials change, run `make sync-auth` while the container is up.
-It refreshes only the copied credential/config files, then restarts the managed
-Codex app-server so it reloads the new authentication state. Remote Control
-clients reconnect briefly; the rest of the live Codex and GitHub state is
-preserved.
+Use `make login` for Codex authentication. It creates a fresh login in a temporary
+local `CODEX_HOME`, imports the resulting `auth.json` into the container as the
+`codex` user, restarts the managed app-server, and removes the temporary local
+cache. Your normal Mac login is preserved. The container keeps its own session
+in the persistent `codex-state` volume and refreshes it during normal use.
 
-If Codex presents the sign-in screen after credentials were synced, run:
+When host configuration or GitHub credentials change, run `make sync-auth` while
+the container is up. It refreshes the copied configuration and GitHub files,
+preserves an existing Codex `auth.json`, and restarts the managed app-server.
+Repeatedly overwriting the container's refreshed tokens with the Mac's copy can
+break authentication; each environment should maintain its own session.
+
+If Codex asks you to sign in again, run on the Mac:
 
 ```sh
 make up
-make sync-auth
+make login
 make doctor
 make shell
 ```
 
-`make shell` expects the container to be running. `make sync-auth` now restarts
-the managed app-server because `codex login status` only confirms the copied
-credential cache, while an already-running app-server may still have the
-previous authentication state in memory.
+`make shell` and `make login` expect the container to be running. Rebuild and
+recreate existing containers after updating the seeding script so `sync-auth`
+uses the token-preserving behavior. Named volumes retain repositories and state.

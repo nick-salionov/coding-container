@@ -11,7 +11,7 @@ help:
 	@printf '%s\n' \
 		'Choose an engine once with: make configure' \
 		'Then use the same commands for either engine:' \
-		'  make build  make up  make shell  make logs  make down'
+		'  make build  make up  make login  make shell  make logs  make down'
 
 configure:
 	@default=docker; \

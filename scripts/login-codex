@@ -1,0 +1,61 @@
+#!/bin/bash
+set -euo pipefail
+umask 077
+
+engine=${1:?Expected docker or podman}
+container=${2:?Expected container name}
+case "$engine" in
+    docker|podman) ;;
+    *) printf '%s\n' 'Engine must be docker or podman.' >&2; exit 2 ;;
+esac
+
+command -v codex >/dev/null || {
+    printf '%s\n' 'Install Codex CLI on the computer with your browser first.' >&2
+    exit 1
+}
+"$engine" exec --user codex "$container" /bin/sh -c 'test -d "$CODEX_HOME"'
+
+login_home=$(mktemp -d)
+trap 'rm -rf -- "$login_home"' EXIT
+printf '%s\n' 'Sign in using your local browser. This creates a session only for the container.'
+env -u OPENAI_API_KEY -u CODEX_API_KEY -u CODEX_ACCESS_TOKEN \
+    CODEX_HOME="$login_home" codex -c 'cli_auth_credentials_store="file"' login
+if [[ ! -s "$login_home/auth.json" ]]; then
+    printf '%s\n' 'Login did not create an auth cache; container credentials were not changed.' >&2
+    exit 1
+fi
+
+# Stream the new cache directly into the persistent volume, without printing it.
+"$engine" exec --interactive --user codex "$container" /bin/bash -c '
+    set -euo pipefail
+    umask 077
+    temporary_file=$(mktemp "$CODEX_HOME/auth.json.XXXXXX")
+    daemon_stopped=0
+    cleanup() {
+        rm -f -- "$temporary_file"
+        if [[ "$daemon_stopped" == 1 ]]; then
+            codex app-server daemon start
+        fi
+    }
+    trap cleanup EXIT
+    cat > "$temporary_file"
+    python3.13 -c '\''
+import json, sys
+try:
+    with open(sys.argv[1]) as handle:
+        data = json.load(handle)
+    tokens = data.get("tokens") or {}
+    valid = data.get("auth_mode") == "chatgpt" and tokens.get("access_token") and tokens.get("refresh_token")
+except (OSError, ValueError, AttributeError):
+    valid = False
+if not valid:
+    raise SystemExit("Login did not produce managed ChatGPT credentials; existing credentials were preserved.")
+'\'' "$temporary_file"
+    codex app-server daemon stop
+    daemon_stopped=1
+    mv -f -- "$temporary_file" "$CODEX_HOME/auth.json"
+    codex app-server daemon start
+    daemon_stopped=0
+    codex login status
+' < "$login_home/auth.json"
+printf '%s\n' 'Container login installed. The temporary local cache will be removed on exit.'
